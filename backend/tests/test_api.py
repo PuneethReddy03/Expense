@@ -8,8 +8,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app import create_app
 from app.extensions import db
 from app.models import User
+from config import get_database_url
 from sqlalchemy import inspect, text
 from werkzeug.security import generate_password_hash
+
+
+def test_database_url_uses_installed_psycopg2_driver(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgres://user:password@host/database")
+    assert get_database_url() == "postgresql+psycopg2://user:password@host/database"
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://user:password@host/database")
+    assert get_database_url() == "postgresql+psycopg2://user:password@host/database"
+
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
+    assert get_database_url() == "sqlite:///:memory:"
 
 
 def create_test_app():
